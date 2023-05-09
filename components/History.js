@@ -5,8 +5,8 @@ export default function History({ data }) {
         {
             data.length > 0 ?
             (data.map((d) => (
-                <Entry key={d}>
-                    {d}
+                <Entry key={d.id}>
+                    {d.text}
                 </Entry>
             ))) : (
                 <p>No gratitudes.</p>

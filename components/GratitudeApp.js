@@ -4,21 +4,47 @@ import Input from "./Input";
 import styled from "styled-components"
 import DecorativeLineBreak from "./DecorativeLineBreak";
 
-const test = [
-    'finger picked guitar',
-    'hot tea',
-    'birdsong'
-]
-
-
-export default function GratitudeApp() {
-    const [data, setData] = useState([]);
+export default function GratitudeApp({ data, error, mutate} ) {
     
     const addGratitude = (newGratitude) => {
-        setData([...data, newGratitude])
+        // Send POST request to API route with newGratitude
+        fetch("/api", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ gratitude: newGratitude })
+        });
+        
+        // Tell SWR we updated the data so we can update cached data
+        // Doesn't include ID or date added, but this is all that's needed for the preview
+        // Before it gets overwritten by the database
+        
+        // Start showing new data before request finishes
+        // This is called Optimistic UI - expecting this to work, so show it before it gets into the database
+        mutate([...data, {text: newGratitude}], {
+            optimisticData: [...data, { text: newGratitude }],
+            rollbackOnError: true,
+            populateCache: true,
+            revalidate: false
+        })
     }
 
-    const clearGratitudes = (e) => setData([]);
+    const clearGratitudes = (e) => {
+        fetch("/api", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        });
+        
+        mutate([], {
+            optimisticData: [],
+            rollbackOnError: true,
+            populateCache: true,
+            revalidate: false
+        })
+    }
 
     return <Wrapper>
             <DecorativeArc>
